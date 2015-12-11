@@ -1,7 +1,7 @@
 [Service]
 EnvironmentFile=-/etc/kubernetes/kubernetes.env
 ExecStart=/opt/bin/hyperkube \
-    kube-proxy \
+    proxy \
     --master=http://127.0.0.1:8080
 Restart=always
 RestartSec=10
