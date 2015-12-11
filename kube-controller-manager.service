@@ -1,0 +1,12 @@
+[Service]
+EnvironmentFile=-/etc/kubernetes/kubernetes.env
+ExecStart=/opt/bin/hyperkube \
+    controller-manager \
+    --master=http://127.0.0.1:8080
+    --service-account-private-key-file=/etc/kubernetes/ssl/apiserver-key.pem
+    --root-ca-file=/etc/kubernetes/ssl/ca.pem
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
