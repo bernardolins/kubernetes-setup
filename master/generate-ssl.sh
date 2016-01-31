@@ -2,8 +2,7 @@
 
 K8S_SERVICE_IP=10.3.0.1
 
-
-cat << EOF > openssl.cnf
+cat << EOF > $CERTIFICATE_DESTINATION/openssl.cnf
 [req]
 req_extensions = v3_req
 distinguished_name = req_distinguished_name
@@ -22,13 +21,13 @@ EOF
 echo -e "\n"
 echo "---- Generating root certificates (ca.pem and ca-key.pem)"
 echo -e "\n"
-openssl genrsa -out ca-key.pem 2048
-openssl req -x509 -new -nodes -key ca-key.pem -days 10000 -out ca.pem -subj "/CN=kube-ca"
+openssl genrsa -out $CERTIFICATE_DESTINATION/ca-key.pem 2048
+openssl req -x509 -new -nodes -key $CERTIFICATE_DESTINATION/ca-key.pem -days 10000 -out $CERTIFICATE_DESTINATION/ca.pem -subj "/CN=kube-ca"
 
 echo -e "\n"
 echo "---- Generating API server keypair"
 echo -e "\n"
 
-openssl genrsa -out apiserver-key.pem 2048
-openssl req -new -key apiserver-key.pem -out apiserver.csr -subj "/CN=kube-apiserver" -config openssl.cnf
-openssl x509 -req -in apiserver.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out apiserver.pem -days 365 -extensions v3_req -extfile openssl.cn
+openssl genrsa -out $CERTIFICATE_DESTINATION/apiserver-key.pem 2048
+openssl req -new -key $CERTIFICATE_DESTINATION/apiserver-key.pem -out $CERTIFICATE_DESTINATION/apiserver.csr -subj "/CN=kube-apiserver" -config $CERTIFICATE_DESTINATION/openssl.cnf
+openssl x509 -req -in $CERTIFICATE_DESTINATION/apiserver.csr -CA $CERTIFICATE_DESTINATION/ca.pem -CAkey $CERTIFICATE_DESTINATION/ca-key.pem -CAcreateserial -out $CERTIFICATE_DESTINATION/apiserver.pem -days 365 -extensions v3_req -extfile $CERTIFICATE_DESTINATION/openssl.cnf
