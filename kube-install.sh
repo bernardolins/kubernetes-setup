@@ -41,9 +41,8 @@ while [ $# -ge 1 ]; do
 done
 
 if [ $role ]; then
-  echo $role 
   if [[ $role != "master" && $role != "worker" ]]; then
-    echo "---- Wrong argument! Try 'master' or 'worker'"
+    echo "---- Wrong role argument! Try 'master' or 'worker'"
     exit 1
   fi
 else
@@ -69,4 +68,4 @@ ARCH=linux; wget https://storage.googleapis.com/kubernetes-release/release/$VERS
 chmod +x hyperkube kubelet
 mv hyperkube kubelet /opt/bin
 
-./${role}/generate-ssl.sh
+source ${role}/generate-ssl.sh
