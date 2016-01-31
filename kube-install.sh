@@ -7,9 +7,10 @@ function printUsage {
   echo -e "\t--role -r\t\t\tRole of the machine on kubernetes cluster. Possible values: master/worker"
   echo -e "\t--ip -i\t\t\t\tMachine ip. Possible values are any valid Ip address"
   echo -e "\t--kube-version -v\t\tVersion of kubernetes. Possible values are any valid kubernetes version"
+  echo -e "\t--fqnd -f\t\t\tFully Qualified Domain Name of node. Mandatory on workers. Possible values are any valid fqdn"
 }
 
-args=$(getopt -l "role:ip:kube-version" -o "r:i:v:h" -- "$@")
+args=$(getopt -l "role:ip:kube-version:fqdn:help" -o "r:i:v:f:h" -- "$@")
 
 eval set -- "$args"
 
@@ -32,7 +33,11 @@ while [ $# -ge 1 ]; do
       version="$2"
       shift
       ;;
-    -h)
+    -f|--fqdn)
+      fqdn="$2"
+      shift
+      ;;
+    -h|--help)
       printUsage
       exit 0
       ;;
@@ -44,6 +49,14 @@ if [ $role ]; then
   if [[ $role != "master" && $role != "worker" ]]; then
     echo "---- Wrong role argument! Try 'master' or 'worker'"
     exit 1
+  fi
+
+  if [ $role == "worker" ]; then
+    if [ ! $fqdn ]; then
+      echo "---- Worker must have fqdn (fully qualified domain name)"
+      printUsage
+      exit 1
+    fi      
   fi
 else
   echo "---- Must specify a role!"
