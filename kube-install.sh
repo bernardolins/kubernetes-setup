@@ -1,5 +1,17 @@
 #!/bin/bash
 
+config=$(pwd)
+
+KUBE_DIRECTORY="/etc/kubernetes"
+SYSTEMD_DIRECTORY="/etc/systemd/system"
+ENVIRONMENT_FILE="kubernetes.env"
+
+CERTIFICATE_DESTINATION="$KUBE_DIRECTORY/ssl"
+
+BINARY_DIRECTORY="/opt/bin"
+
+
+
 function printUsage {
   echo -e "A tool to help install kubernetes on a CoreOS machine following this guide: https://coreos.com/kubernetes/docs/latest/getting-started.html"
   echo -e "\n"
@@ -8,9 +20,10 @@ function printUsage {
   echo -e "\t--ip -i\t\t\t\tMachine ip. Possible values are any valid Ip address"
   echo -e "\t--kube-version -v\t\tVersion of kubernetes. Possible values are any valid kubernetes version"
   echo -e "\t--fqnd -f\t\t\tFully Qualified Domain Name of node. Mandatory on workers. Possible values are any valid fqdn"
+  echo -e "\t--config-dir -d\t\tDirectory of unit files."
 }
 
-args=$(getopt -l "role:ip:kube-version:fqdn:help" -o "r:i:v:f:h" -- "$@")
+args=$(getopt -l "role:ip:kube-version:fqdn:config-dir:help" -o "r:i:v:f:d:h" -- "$@")
 
 eval set -- "$args"
 
@@ -35,6 +48,10 @@ while [ $# -ge 1 ]; do
       ;;
     -f|--fqdn)
       fqdn="$2"
+      shift
+      ;;
+    -d|--config-dir)
+      config="$2"
       shift
       ;;
     -h|--help)
@@ -72,13 +89,18 @@ fi
 
 echo "---- Installing a kubernetes $role version $version, with Ip address $ip"
 
-mkdir -p /opt/bin
+echo "---- Creating kubernetes directory at $KUBE_DIRECTORY"
+mkdir -p $KUBE_DIRECTORY
+
+echo "---- Creating binaries directory at $BINARY_DIRECTORY"
+mkdir -p $BINARY_DIRECTORY 
 
 echo "---- Downloading binaries"
-ARCH=linux; wget https://storage.googleapis.com/kubernetes-release/release/$VERSION/bin/${ARCH}/amd64/kubelet
-ARCH=linux; wget https://storage.googleapis.com/kubernetes-release/release/$VERSION/bin/${ARCH}/amd64/hyperkube
+ARCH=linux; wget https://storage.googleapis.com/kubernetes-release/release/$version/bin/${ARCH}/amd64/kubelet
+ARCH=linux; wget https://storage.googleapis.com/kubernetes-release/release/$version/bin/${ARCH}/amd64/hyperkube
 
 chmod +x hyperkube kubelet
-mv hyperkube kubelet /opt/bin
+mv hyperkube kubelet $BINARY_DIRECTORY
 
 source ${role}/generate-ssl.sh
+source ${role}/setup-config.sh
